@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT OR MPL-2.0 OR LGPL-2.1-or-later OR GPL-2.0-or-later
 # Copyright 2010, SIL International, All rights reserved.
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.15 FATAL_ERROR)
 cmake_policy(SET CMP0012 NEW)
 include(TestBigEndian)
 find_package(PythonInterp 3.6)
@@ -68,9 +68,11 @@ message(STATUS "Using vm machine type: ${GRAPHITE2_VM_TYPE}")
 
 if (BUILD_SHARED_LIBS)
     if (PYTHONINTERP_FOUND)
-        EXEC_PROGRAM(${PYTHON_EXECUTABLE}
-            ARGS -c \"import ctypes\; print(ctypes.sizeof(ctypes.c_void_p)) \"
-            OUTPUT_VARIABLE PYTHON_SIZEOF_VOID_P)
+        execute_process(
+            COMMAND ${PYTHON_EXECUTABLE} -c "import ctypes; print(ctypes.sizeof(ctypes.c_void_p))"
+            OUTPUT_VARIABLE PYTHON_SIZEOF_VOID_P
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
         if (NOT (PYTHON_VERSION_MAJOR GREATER 2 AND PYTHON_VERSION_MINOR GREATER 5))
             message(WARNING "Python version 3.6 or greater required. Disabling some tests.")
         elseif ((PYTHON_SIZEOF_VOID_P STREQUAL CMAKE_SIZEOF_VOID_P) AND (NOT GRAPHITE2_NFILEFACE) AND ((NOT GRAPHITE2_SANITIZERS MATCHES "address") OR CMAKE_COMPILER_IS_GNUCXX))
